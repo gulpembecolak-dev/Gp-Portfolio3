@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gülpembe Çolak — Living Lines</title>
+    <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-655WEKJH8K"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-655WEKJH8K');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Barlow+Condensed:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F5F0EA;
+      --rose: #C41E3A;
+      --ink: #1A1814;
+      --ink-mid: #4A3F36;
+      --ink-light: #8B7B6E;
+      --panel-bg: rgba(248,244,238,0.97);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--cream);
+      color: var(--ink);
+      font-family: 'Barlow Condensed', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Paper grain texture overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(26,24,20,0.008) 2px,
+          rgba(26,24,20,0.008) 3px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 4px,
+          rgba(26,24,20,0.005) 4px,
+          rgba(26,24,20,0.005) 5px
+        );
+    }
+
+    /* ── Custom cursor ── */
+    .cursor-dot {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--rose);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.25s ease, height 0.25s ease, opacity 0.25s ease, background 0.25s ease;
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 0.5px solid var(--rose);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1), height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+      opacity: 0.4;
+    }
+    .cursor-ring.big { width: 60px; height: 60px; opacity: 0.2; }
+    .cursor-dot.hidden { opacity: 0; }
+
+    /* ── Floating name – fixed bottom left ── */
+    .floating-name {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 2.5rem;
+      z-index: 200;
+    }
+    .floating-name .name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      display: block;
+    }
+    .floating-name .role {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      display: block;
+      margin-top: 3px;
+    }
+
+    /* ── Top right nav ── */
+    .top-nav {
+      position: fixed;
+      top: 2rem;
+      right: 2.5rem;
+      z-index: 200;
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .top-nav a {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .top-nav a:hover { color: var(--rose); }
+
+    /* ── Hero ── */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .rose-stage {
+      position: relative;
+      width: clamp(260px, 38vw, 400px);
+    }
+
+    #rose-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+
+    /* SVG line styles */
+    .draw-path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .stem-path  { stroke: var(--ink); stroke-width: 4.5; }
+    .leaf-path  { stroke: var(--ink); stroke-width: 4; }
+    .vein-path  { stroke: var(--ink); stroke-width: 1.2; opacity: 0.35; }
+    .bud-path   { stroke: var(--rose); stroke-width: 4.5; }
+
+    /* Invisible fat hit areas for leaves */
+    .hit-zone {
+      fill: transparent;
+      stroke: transparent;
+      stroke-width: 22;
+      cursor: pointer;
+    }
+
+    /* Leaf hover glow */
+    .leaf-group .leaf-path { transition: stroke-width 0.3s ease, opacity 0.3s ease; }
+    .leaf-group:hover .leaf-path { stroke-width: 6; }
+
+    /* Bud hover */
+    .bud-group .bud-path { transition: stroke-width 0.35s ease; }
+    .bud-group:hover .bud-path { stroke-width: 6; }
+
+    /* ── Leaf labels ── */
+    .leaf-label {
+      position: absolute;
+      font-size: 13.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .leaf-label .lcat { color: var(--rose); font-size: 12px; letter-spacing: 0.18em; }
+    .leaf-label .ltitle { font-size: 16.5px; font-weight: 500; }
+
+    .leaf-label.ll-left {
+      left: -8px;
+      top: 67%;
+      transform: translateX(-16px);
+      align-items: flex-end;
+      text-align: right;
+    }
+    .leaf-label.ll-right {
+      right: -8px;
+      top: 52%;
+      transform: translateX(16px);
+      align-items: flex-start;
+    }
+    .leaf-label.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── Ghost images ── */
+    .ghost-set {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .ghost-set.gl { left: -225px; top: 58%; }
+    .ghost-set.gr { right: -225px; top: 46%; }
+    .ghost-set.visible { opacity: 1; }
+
+    .ghost-box {
+      background: var(--ink);
+      border-radius: 1px;
+    }
+    .ghost-box:nth-child(1) { width: 195px; height: 126px; opacity: 0.07; }
+    .ghost-box:nth-child(2) { width: 135px; height: 84px; opacity: 0.04; }
+
+    /* ── About panel ── */
+    .about-panel {
+      position: absolute;
+      top: 2%;
+      right: -455px;
+      width: 435px;
+      background: var(--panel-bg);
+      border-left: 0.5px solid rgba(26,24,20,0.12);
+      padding: 2.8rem 2.4rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.55s ease, right 0.55s cubic-bezier(0.4,0,0.2,1);
+      z-index: 10;
+      box-shadow: 4px 0 40px rgba(26,24,20,0.07);
+    }
+    .about-panel.open {
+      opacity: 1;
+      right: -437px;
+      pointer-events: all;
+    }
+
+    .ap-overline {
+      font-size: 12px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .ap-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 39px;
+      font-weight: 300;
+      color: var(--ink);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .ap-bio {
+      font-size: 15px;
+      letter-spacing: 0.03em;
+      line-height: 1.75;
+      color: var(--ink-mid);
+      margin-bottom: 1.25rem;
+    }
+    .ap-divider {
+      width: 24px;
+      height: 0.5px;
+      background: var(--rose);
+      margin-bottom: 1.25rem;
+    }
+    .ap-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ap-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .ap-row .ap-key {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+    .ap-row .ap-val {
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+    }
+    .ap-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 1.25rem;
+    }
+    .ap-tag {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border: 0.5px solid rgba(26,24,20,0.2);
+      color: var(--ink-mid);
+    }
+
+    /* ── Scroll indicator ── */
+    .scroll-cue {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 3.8s forwards;
+    }
+    .scroll-cue .sc-line {
+      width: 0.5px;
+      height: 48px;
+      background: var(--ink-light);
+      animation: drip 2.2s ease-in-out 3.8s infinite;
+      transform-origin: top;
+    }
+    .scroll-cue span {
+      font-size: 16px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+    @keyframes drip {
+      0%   { transform: scaleY(0); opacity: 1; }
+      60%  { transform: scaleY(1); opacity: 1; }
+      100% { transform: scaleY(1); opacity: 0; }
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; }
+    }
+
+    /* ── Works section ── */
+    .works-section {
+      padding: 9rem 5rem 6rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .sec-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 3.5rem;
+    }
+    .sec-head h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .sec-head .sec-count {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 6px;
+    }
+
+    /* Filter row */
+    .filter-row {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    .f-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      background: none;
+      border: none;
+      cursor: none;
+      padding: 0 0 6px;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .f-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 0.5px;
+      background: var(--rose);
+      transition: width 0.3s ease;
+    }
+    .f-btn.active,
+    .f-btn:hover { color: var(--ink); }
+    .f-btn.active::after,
+    .f-btn:hover::after { width: 100%; }
+
+    /* Grid */
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    /* ── Frosted glass work cards ── */
+    .work-card {
+      position: relative;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      cursor: none;
+      /* Warm cream glass base */
+      background: rgba(245,240,234,0.55);
+      backdrop-filter: blur(14px) saturate(1.4);
+      -webkit-backdrop-filter: blur(14px) saturate(1.4);
+      border: 0.5px solid rgba(245,240,234,0.7);
+      transition: background 0.45s ease, backdrop-filter 0.45s ease,
+                  -webkit-backdrop-filter 0.45s ease, border-color 0.45s ease;
+    }
+
+    /* Subtle tonal variation per card */
+    .work-card:nth-child(odd)  { background: rgba(248,244,239,0.52); }
+    .work-card:nth-child(even) { background: rgba(240,235,228,0.58); }
+
+    /* Inner grain / depth layer */
+    .wc-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        145deg,
+        rgba(245,240,234,0.18) 0%,
+        rgba(196,30,58,0.04) 50%,
+        rgba(245,240,234,0.22) 100%
+      );
+      transition: opacity 0.45s ease;
+      pointer-events: none;
+    }
+
+    /* Text overlay — blurred by default, clears on hover */
+    .wc-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.5rem;
+      /* Always visible but blurred */
+      opacity: 1;
+      background: linear-gradient(
+        to top,
+        rgba(245,240,234,0.72) 0%,
+        rgba(245,240,234,0.28) 55%,
+        transparent 100%
+      );
+      /* Blur the content area */
+      filter: blur(3.5px);
+      transition: filter 0.38s cubic-bezier(0.4,0,0.2,1),
+                  background 0.38s ease;
+    }
+
+    /* On hover: glass clears, text sharpens */
+    .work-card:hover {
+      background: rgba(248,244,239,0.82);
+      backdrop-filter: blur(24px) saturate(1.8);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8);
+      border-color: rgba(196,30,58,0.18);
+    }
+    .work-card:hover .wc-overlay {
+      filter: blur(0px);
+      background: linear-gradient(
+        to top,
+        rgba(245,240,234,0.88) 0%,
+        rgba(245,240,234,0.45) 60%,
+        transparent 100%
+      );
+    }
+    .work-card:hover .wc-bg { opacity: 0.6; }
+
+    .wc-cat {
+      font-size: 8px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin-bottom: 5px;
+    }
+    .wc-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .wc-year {
+      font-size: 9px;
+      color: var(--ink-light);
+      margin-top: 3px;
+    }
+
+    /* ── Contact ── */
+    .contact-section {
+      padding: 7rem 5rem 5rem;
+      border-top: 0.5px solid rgba(26,24,20,0.1);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .ct-left {}
+    .ct-left .ct-pre {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .ct-left h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 62px;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1;
+      color: var(--ink);
+      margin-bottom: 0;
+    }
+    .ct-left .ct-email {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      color: var(--ink-mid);
+      text-decoration: none;
+      border-bottom: 0.5px solid currentColor;
+      padding-bottom: 3px;
+      transition: color 0.2s;
+    }
+    .ct-left .ct-email:hover { color: var(--rose); }
+    .ct-left .ct-phone {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-light);
+      margin-top: 6px;
+    }
+
+    .ct-right {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: flex-end;
+    }
+    .social-row {
+      display: flex;
+      gap: 1.75rem;
+    }
+    .social-row a {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .social-row a:hover { color: var(--rose); }
+
+    /* Small rose mark in footer */
+    .footer-mark svg {
+      width: 28px;
+      height: 42px;
+      opacity: 0.18;
+    }
+
+    .copyright {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      font-style: italic;
+      color: rgba(26,24,20,0.28);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .rose-stage { width: 360px; }
+      .about-panel { width: 360px; right: -375px; }
+      .about-panel.open { right: -362px; }
+    }
+    @media (max-width: 900px) {
+      body { cursor: auto; }
+      .cursor-dot, .cursor-ring { display: none; }
+      .floating-name { bottom: 1.5rem; left: 1.5rem; }
+      .top-nav { top: 1.5rem; right: 1.5rem; }
+      .works-section { padding: 6rem 1.5rem 4rem; }
+      .works-grid { grid-template-columns: repeat(2, 1fr); }
+      .contact-section {
+        flex-direction: column;
+        gap: 3rem;
+        padding: 5rem 1.5rem 3rem;
+        align-items: flex-start;
+      }
+      .ct-right { text-align: left; align-items: flex-start; }
+      .rose-stage { width: 280px; }
+      /* About panel: fixed bottom sheet on tablet/mobile */
+      .about-panel {
+        position: fixed !important;
+        right: 0 !important;
+        left: 0 !important;
+        bottom: -100% !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        transform: none !important;
+        border-left: none !important;
+        border-top: 1px solid rgba(26,24,20,0.12) !important;
+        max-height: 72vh;
+        overflow-y: auto;
+        z-index: 500;
+        transition: bottom 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease !important;
+        padding: 2rem 1.5rem !important;
+      }
+      .about-panel.open {
+        bottom: 0 !important;
+        right: 0 !important;
+        opacity: 1 !important;
+      }
+      .ghost-set { display: none; }
+    }
+    @media (max-width: 600px) {
+      .rose-stage { width: 220px; }
+      .hero { padding-top: 4rem; align-items: flex-start; padding-left: 0; }
+      .works-grid { grid-template-columns: 1fr; }
+      .works-section { padding: 5rem 1rem 3rem; }
+      .filter-row { flex-wrap: wrap; gap: 0.75rem; }
+      .contact-section { padding: 4rem 1rem 2.5rem; }
+      .ct-left h2 { font-size: 44px; }
+      .floating-name { bottom: 1rem; left: 1rem; }
+      .top-nav { top: 1rem; right: 1rem; gap: 1rem; }
+      .scroll-cue { bottom: 1.5rem; }
+      .sec-head h2 { font-size: 38px; }
+    }
+    @media (max-width: 400px) {
+      .rose-stage { width: 180px; }
+    }
+
+    /* ── WhatsApp inline contact button ── */
+    .ct-heading-row {
+      display: flex;
+      align-items: center;
+      gap: 2.8rem;
+      margin-bottom: 2rem;
+    }
+    .ct-heading-row h2 {
+      margin-bottom: 0;
+    }
+    .wa-contact {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 0.5px solid rgba(196,30,58,0.32);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      flex-shrink: 0;
+      position: relative;
+      transition: border-color 0.3s ease,
+                  background 0.3s ease,
+                  transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.3s ease;
+      cursor: none;
+    }
+    .wa-contact::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 0.5px solid rgba(196,30,58,0.14);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .wa-contact:hover {
+      background: #25D366;
+      border-color: #25D366;
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px rgba(37,211,102,0.38);
+    }
+    .wa-contact:hover::before {
+      transform: scale(1.18);
+      opacity: 0;
+    }
+    .wa-contact svg {
+      width: 32px;
+      height: 32px;
+      transition: transform 0.3s ease;
+    }
+    .wa-contact:hover svg { transform: scale(1.08); }
+    /* WA icon paths: default ink color, white on hover */
+    .wa-contact .wa-body { fill: var(--ink); transition: fill 0.3s; }
+    .wa-contact .wa-phone { fill: var(--cream); transition: fill 0.3s; }
+    .wa-contact:hover .wa-body { fill: white; }
+    .wa-contact:hover .wa-phone { fill: #25D366; }
+  </style>
+</head>
+<body>
+
+  <!-- Cursors -->
+  <div class="cursor-dot" id="cd"></div>
+  <div class="cursor-ring" id="cr"></div>
+
+  <!-- Floating name -->
+  <header class="floating-name">
+    <span class="name">Gülpembe Çolak</span>
+    <span class="role">Graphic &amp; Digital Design · Antwerp</span>
+  </header>
+
+  <!-- Top nav -->
+  <nav class="top-nav">
+    <a href="#works">Works</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <!-- ══════════════════════════════ HERO ══════════════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="rose-stage" id="stage">
+
+      <!-- ───── REAL HAND-DRAWN ROSE SVG ───── -->
+      <svg id="rose-svg" viewBox="0 0 277.07 461.17" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Left leaf + stem -->
+        <path id="leaf_left"
+          d="M117.08,276.6c-1.35-5.75-3.01-11.16-3.71-17.18,2.09-2.99,2.02-6.36,1.69-9.89l-.38-4.13c-.35-3.74-.23-7.52-1.18-11.25l-1.62-6.38c-.85-3.36-3.85-5.9-6.52-8.06l-8.16-6.58c-4.83-3.9-10.96-5.37-17.06-6-4.48-.47-8.71-1.41-13.17-1.04l-8.08-.26c4.5,4.38,7.17,11.5,7.92,17.5.71,5.72,2.26,11,4.25,16.34,1.22,3.27,2.39,6.22,4.55,9.04,1.74,2.27,3.3,4.88,5.85,6.43,6,3.64,16.33,4.63,17.8-1.71.81-3.49,1.25-7.73-.25-11.1-1.5-3.36-4.73-5.4-7.38-7.65l-6.3-4.09c1.29-2.2,2.37-1.23,3.62-.85l5.74,1.74c6.49,1.97,10.09,7.34,12.07,13.57,2.13,6.7,2.85,13.68.08,20.28-.95,2.25-2.11,4.01-4.24,5.39-1.26.82-2.68,2.01-4.18,2.53-7.41,2.56-15.12.25-21.27-4.21-2.96-2.15-5.5-4.11-7.47-7.32l-3.16-5.14-3.29-9.03-2.76-8.36c-.87-2.64-2.03-5.17-2.83-7.87-1.61-5.38-2.75-10.74-5.34-15.73-.86-1.65-2.11-2.88-3.17-4.34l-4.54-6.25c-2.18-3-8.59-2.44-8.95-3.72-.14-.49.08-1.22.71-1.31l5.53-.81c2.55-.37,4.89-.59,7.49-.7,5.84-.23,11.51-1.05,17.34-.8,5.02.21,9.77.56,14.82-.27,12.32,2.05,25.55,6.59,32.41,17.3l5.93,9.26c5.8,9.05,5.31,25.88,3.53,36.91-.88,5.51-.09,10.15,1.05,15.47l2.7,12.58c1.47,6.84,2.09,13.51,3.99,20.27,2.97,10.52,4.46,20.97,6.68,31.72l3.83,18.58c1.58,7.65,3.07,14.88,3.98,22.66l2.06,17.61,1.48,12.98c.98,8.67.89,17.16.68,25.91l-.12,5-.25,6.12c-.08,1.96.22,2.58-1.37,4-1.83,1.64-2.25,6.26-3.73,7.13-.45.26-1.54.56-1.96-.12-1.14-1.86,1.62-5.64,1.54-11.39l-.07-5.16-.71-12.59c-.4-7.04-1.05-13.73-1.17-20.78l-1.31-11.92-1.49-9.98-3.02-24.92-2.14-13.59c-.51-3.21-1.1-5.86-1.82-8.92l-3.66-15.53-2.42-12.72-4.27-17.21c-.97-3.91-1.98-7.51-2.9-11.45l-1.88-8.01Z"
+          fill="#191612" stroke="#191612" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="cursor:pointer;"/>
+
+        <!-- Right leaf -->
+        <path id="leaf_right"
+          d="M143.42,136.72c1.51,2.47,2.78,5.06,4.1,7.83l6.39,13.47c1.4,2.94,2.35,5.79,3.5,8.85,2.26,6.04,4.01,12.16,3.98,18.7-.02,5.28-.67,10.28-.78,15.49l-.22,11.13-.14,10.75c-.08,6.55.05,13.07-1.93,19.29l-1.56,4.91c-.74,2.33-1.89,4.56-1.81,7.39,2.96-3.55,6.07-6.45,9.3-9.57l5.84-5.66c6.77-6.57,13.23-13.76,16.84-22.49.8-1.94-.28-5.92-.99-9.03-.97-4.25-.09-9.17,2.03-12.9,3.42-6.03,8.82-9.32,14.56-12.56,4.65-2.62,8.91-4.67,14.43-5.01,8.34-.5,16.09,1.72,23.79,5.02l22.52,9.64,6.59,2.2c3.43,1.14,5.87-.41,7.01,1.47.23.39.36,1.28-.21,1.84-3.87-.24-7.21,1.14-10.69,2.62-2.89,1.23-5.53,2.44-8.08,4.27l-8.31,5.98c-2.52,1.81-4.4,3.97-6.49,6.27l-4.15,4.57-14.81,12.5-7.02,5.35c-1.85,1.41-3.85,2.08-6.05,2.73l-3.97,1.17c-4.53,1.33-10.8-1.51-13.04-6-3.39-6.79.31-12.92,4.76-18.58l2.63-3.35c2.92-2.7,5.83-5.32,9.35-7.29l6.81-2.37c4.1-1.43,12.08-3.58,12.08-1.7,0,.74-.46.93-1.13,1.21-5.53,2.37-9.93,6.29-14.65,9.91-5.63,4.31-11.2,9.91-10.47,17.22.14,1.4.85,2.86,1.64,3.45,1.16.86,2.95.96,4.2.59,3.96-1.15,6.37-4.04,9.28-6.63,4.65-4.12,8.89-8.16,12.91-12.94l10.15-12.07,4.3-3.63c1.13-.95,2.1-1.46,3.67-2.38-6.42-1.05-12.39-3-18.45-5.59-8.5-3.63-18.24-3.61-26.63.27-3.23,1.49-6.44,3.26-8.13,6.53-1.87,3.63-2.75,7.33-2.95,11.4-.13,2.71-.43,5.26.08,7.98.61,3.24-.44,6.48-2.88,8.73l-3.69,3.41-8.55,7.73-6.25,6.09-9.59,10.68c-6.55,8.06-12.3,16.58-15.48,26.51l-4.63,14.48-3.82,16.52c-.14.63.17,1.43-.36,1.87-.33.28-.81.43-1.4.29l-2.03-5.92-2.18-8.97c-.31-1.28-.1-2.25-.08-3.65l.1-7.77,2.53-5.69,5.58-13.65c1.54-3.76,3.13-7.14,4.63-10.89l4.55-11.35c2.78-6.94,4.3-13.73,4.88-21.12.5-6.34,1.23-12.36,1.07-18.77l-.45-18.32-.46-5.22c-.06-5.93-1.32-11.71-3.6-17.12l-6.72-15.94c-1.92-4.56-4.54-8.79-7.38-12.6,2.77-1.02,2.63-3.05,4.29-2.97.78.04,1.35.64,1.81,1.38Z"
+          fill="#191612" stroke="#191612" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="cursor:pointer;"/>
+
+        <!-- Red bud / flower -->
+        <path id="bud"
+          d="M143.42,136.72c-.45-.74-1.03-1.34-1.81-1.38-1.66-.08-1.52,1.95-4.29,2.97-.33-.38-1.3-.58-1.28-1.46.1-3.63,2.46-4.22,5.14-6.41l3.15-1.05c1.33-1.15,6.37-1.95,9.63-3.57,2.24-1.11,4.16-1.95,6.59-2.62,4.46-1.22,8.71-2.76,13.45-3.15,5.93-.49,8.72-3.88,11.04-9.7,1.32-3.32,1.22-7.88.05-11.38-.88-2.62-1.39-5.09-2.4-7.6-2.58-6.37-4.36-13.06-3.24-20.05.39-2.41.89-4.69,1.1-7.18.16-1.83,1.19-3.75.48-5.64-1.38-3.71.32-6.66-3.33-7.04-.98-.1-3.12-.61-3.81.53-1.26,2.07-2.17,4.52-2.84,6.79l-3.46,11.64c-1.67,5.61-4.89,10.65-5.57,16.53l-1.7,14.59c-.21,1.84-.32,3.8-1.48,5.33-3.28,4.32-7.84,6.95-12.65,9.25-1.19.57-1.7,1.12-3.19,1.28-3.29.34-6.48,1.62-9.88,1.68-1.52.02-3.32-.63-4.72-1.18l-6.85-2.69c-2.5-1.74-4.79-5.01-5.88-4.35-1,.61-2.91,1.71-3.43,2.92-.76,4.45-.3,9.54-1.59,13.52-3.14,9.61-7.28,15.82-15.57,21.46-5.54,3.77-8.3,4.8-15.55,4.11-3.92-.37-9.04-.57-10.48-1.71-2.03-1.61-3.67-2.94-5.86-4.24-1.71-1.01-3.23-2.86-4.77-4.19l-4.54-3.92-2.68-3.18c-2.48-1.7-4.43-3.72-6.59-5.76-.73-.69-1.57-.89-2.02-2.01-.48-1.19-2.27-1.52-3.04-2.43l-3.08-3.65c-1.48-1.74-3.41-2.66-5.13-4.08l-15.85-13.06-4.63-4.12c-4.02-3.58-11.08-11.28-10.03-15.83.33-1.45-.35-2.45-.8-3.54-.2-3.71,2.15-8.87,4.6-10.17l4.41-2.34c3.6-1.91,7.8-1.51,11.78-1.31l6.68.35,12.93-.09c.48-3.85,2.23-7.03,5.23-9.28,3.4-2.54,11.79-1.13,17.25-.37.77.11,1.93,1.3,2.62,1.04,2.22-.83,3.76-3.41,6.89-6.05,1.2-1.01,1.9-2.5,3.35-3.44.96-.63,2.34-1.51,2.96-2.49,1.54-2.41,3.41-4.27,4.99-6.57l4.7-6.82c1.87-1.89,3.29-3.8,4.91-5.82l5.49-6.84c1.49-1.86,2.85-3.68,4.55-5.4l9.22-9.32c3.4-3.43,10.67-4.72,15.85-5.74,2.31-.45,4.61-.57,7.08-.45l7.54.39c3.31.17,6.39,1.68,9.38,2.89,3.86,1.57,6.37,4.43,8.25,8.12,1.19,2.35,3.39,4.81,3.13,7.69s-2.37,5.37-3.97,7.65c-3.78,5.37-8.82,9.15-13.9,13.09-4.16,3.23-8.78,5.21-13.35,7.75l-5.1,2.83c-1.18.66-2.3,1.05-3.66,1.52l-6.49,2.25c-6.26,2.17-13.05,1.37-15.71-4.86-1.13-2.64-1.67-5.94-.63-8.73,2.12-5.72,6.14-10.76,11.82-13.05l8.49-3.43c4.12-1.24,8.71-1.76,12.77-.34,3.63,1.27,4.49,6.52,2.37,9.26-.87,1.12-1.59,2.36-2.75,2.87l-9.17,3.99c-.66.29-2.23.29-2.05-.58,2.38-3.12,6.33-3.7,8.13-7.71.42-.95.47-2.25.02-3.11-1.4-2.66-5.92-.94-9.51.86-4.41,2.2-8.78,4.33-11.88,8.37-1.85,2.42-3.8,8.28-1.38,10.44.73.65,1.91,1.07,3.08.84,14.17-2.81,19.89-5.51,30.7-14.64,1.06-.89,2.03-1.39,3.13-2.08l5.63-3.52c3.7-2.32,4.59-3.35,6.96-6.95,2.91-4.42-2.45-11.67-6.06-13.2-3.06-1.3-6.64-1.7-9.83-1.7h-4.47c-5.13-.41-10.6.25-15.33,2.34-3.49,1.54-6.23,4.37-8.69,7.12l-4.88,5.45c-2.74,3.06-4.13,7.13-6.9,10.18-1.19,1.31-2.08,2.35-2.92,3.9-1.6,2.97-4.5,5.06-6.54,7.67-1.3,1.67-3.71,3.97-5.43,5.39l-3.48,2.86c-2.93,2.41-5.26,5.24-8.06,7.81-.75.69-1.94,1.06-2.11,2.25l6.39,3.73c3.17,1.85,6.17,4.03,8.81,6.62,3.3,3.24,5.46,7.23,8.17,10.87l5.94,8.01c1.42,1.91,3.06,3.7,3.9,5.97l3.38,9.2,4.47-2.87c-2.83-7.02-4.23-11.48-2.34-18.81,1.11-4.3,3.81-7.97,5.84-11.88l2.87-5.52c1.83-2.43,3.39-5.06,5.64-7.05l4.83-4.27,4.96-5.34c2.84-2.52,5.65-4.93,9.3-6.19,1.31-.45,3.81-.53,5,.06,1.88.92,3.59,1.33,5.3,2.39,1.1.68,2.76,2.44,3.29,3.71,3.58,8.55-.77,17.53-6.05,24.68l-4.92,6.66c-.89,1.21-1.73,2.18-2.74,3.25-2.74,2.89-5.2,5.83-8.16,8.57-4.24,3.93-7.07,7.43-12.38,11.4-.47.35-.68,1.06-.55,1.52.09.32.49.63.91.95l2.45,1.9c9.06,1.4,16.11,1.57,22.78-5.01,3.32-3.27,4.83-7.45,5.9-11.94l1.97-8.27c.65-5.2.72-10.33,2.33-15.31l2.41-5.1c1.51-3.2,3.19-6.33,4.05-9.78.73-2.95,2.57-4.93,4.45-7.12,1.49-1.74,3.06-2.75,5.52-2.93,3.06-.21,5.34,1.04,6.74,3.73,1.76,3.4,2.67,6.77,2.93,10.66.13,1.85.64,3.67-.18,5.58-.37,5.47-1.32,10.65-1.01,16.1l5.74,13.79c2.91,7.19,4.16,20.39-1.06,25.4l-2.03,1.94c-2.7,2.59-6.36,3.68-9.93,4.65-1.5.41-2.75,1.11-4.23,1.36l-5.73.96-4.09.69c-6.52,1.1-13.29,2.76-18.88,6.19-.7.43-1.35.82-1.21,1.61ZM121.22,97.26c3.65-2.07,6.22-4.76,9.16-7.4l6.88-6.19,5.17-5.49c.98-1.04,1.37-2.59,2.31-3.7,2.31-2.74,3.65-5.9,5.41-8.93,3.19-5.49,4.01-12.82-.51-14.5-2.98-1.11-5.38-.45-7.94.89-4.69,2.46-8.12,5.71-11.18,9.95-1.55,2.14-3.77,3.7-4.77,6.36l-2.78,4.7-1.76,5.37c-1.05,3.2-1.26,6.51-2.2,9.79-1.1,3.82-1.4,7.74-.52,11.34,1.21-.55,1.77-1.63,2.73-2.17ZM56.3,64.05c-3.1-.67-5.78.32-7.69,2.57,2.67-.59,5.14-1.14,7.69-2.57ZM82.26,113.27c3.02.94,6.31,1.47,9.51,1.49,4.35.03,7.97-2.08,11.56-4.26-.91-5.4-1.32-10.77-4.27-15.29l-3.9-5.98-3.39-3.76c-3.08-3.42-6.28-6.75-9.96-9.45-1.38-1.02-2.8-1.46-4.21-2.26l-3.78-2.15c-2.39-1.36-4.4-3.1-7.03-4.01-3.2,1.27-6.44,2.29-9.88,2.78l-9.86,1.39-.21,5.72c-.08,2.17.49,4.07.67,6.03.25,2.79,1.42,4.79,2.37,7.2,2.05,5.24,4.99,9.47,9.17,13.2,1.9,1.69,3.49,3.17,6.06,3.98l5.96,1.88,11.17,3.49ZM96.78,137.5l4.66-9.43c.76-1.53,1.97-2.99,1.92-4.85-.05-2.07-.26-3.93.45-6.02-2.64.1-4.76.72-6.94,2.04-5.52.77-11.27,1.14-16.68-.35-1.85-.51-3.54-.83-5.27-1.55l-5.51-2.29-4.95-1.79c-2.4-.87-4.52-1.43-6.46-3.16l-6.32-5.65c-2.17-1.94-4.37-4.45-5.26-7.23l-.68-2.12-2.42-5.2c-1.59-3.42-2.25-6.48-2.99-10.03l-.84-4.04c-.3-1.46.78-3.2-.94-4.56-1.91,1.01-4.33.45-6.3.88s-3.69.24-5.58.67l-8.64,1.95c-3.13.71-9.27,4.24-9.47,7.1-.16,2.26,4.19,6.7,6.77,8.97l2.75,2.42c3.71,3.27,7.37,6.32,11.2,9.45,1.03.84,1.91,2.04,2.96,2.96l11.48,10.06c2.51,2.2,4.7,4.78,6.85,7.34l5.1,6.08c1.47,1.75,2.46,4.13,4.35,5.54,2.15,1.61,4.33,2.96,6.37,4.85,4.61,4.26,7.79,7.75,14.4,6.96l3.54-.42c5.57-.67,9.9-3.46,12.43-8.59Z"
+          fill="#a62425" stroke="#a62425" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="cursor:pointer;"/>
+
+      </svg>
+
+      <!-- Leaf labels -->
+      <div class="leaf-label ll-left" id="lbl-left">
+        <span class="lcat">Branding &amp; Print</span>
+        <span class="ltitle">Works</span>
+      </div>
+      <div class="leaf-label ll-right" id="lbl-right">
+        <span class="lcat">Digital &amp; Motion</span>
+        <span class="ltitle">Works</span>
+      </div>
+
+      <!-- Ghost images -->
+      <div class="ghost-set gl" id="ghost-l">
+        <div class="ghost-box"></div>
+        <div class="ghost-box"></div>
+      </div>
+      <div class="ghost-set gr" id="ghost-r">
+        <div class="ghost-box"></div>
+        <div class="ghost-box"></div>
+      </div>
+
+      <!-- About panel (bud hover) -->
+      <div class="about-panel" id="about-panel">
+        <span class="ap-overline">About me</span>
+        <h2 class="ap-name">Gülpembe<br>Çolak</h2>
+        <p class="ap-bio">Graphic Design & Digital Media student at AP Hogeschool, Antwerp. I design with intention across print, brand, digital and motion.</p>
+        <div class="ap-divider"></div>
+        <div class="ap-details">
+          <div class="ap-row">
+            <span class="ap-key">Based in</span>
+            <span class="ap-val">Antwerp, BE</span>
+          </div>
+          <div class="ap-row">
+            <span class="ap-key">Study</span>
+            <span class="ap-val">AP Hogeschool · 2023–2027</span>
+          </div>
+          <div class="ap-row">
+            <span class="ap-key">Languages</span>
+            <span class="ap-val">EN · NL · TR</span>
+          </div>
+          <div class="ap-row">
+            <span class="ap-key">Tools</span>
+            <span class="ap-val">AI · PS · ID · AE · Figma</span>
+          </div>
+        </div>
+        <div class="ap-tags">
+          <span class="ap-tag">Branding</span>
+          <span class="ap-tag">Print</span>
+          <span class="ap-tag">Motion</span>
+          <span class="ap-tag">UI/UX</span>
+          <span class="ap-tag">Photography</span>
+        </div>
+      </div>
+
+    </div><!-- /rose-stage -->
+
+    <!-- Scroll cue -->
+    <div class="scroll-cue">
+      <div class="sc-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ WORKS ══════════════════════════════ -->
+  <section class="works-section" id="works">
+    <div class="sec-head">
+      <h2>Selected<br>Work</h2>
+      <span class="sec-count">06 projects · 2023–2025</span>
+    </div>
+
+    <div class="filter-row">
+      <button class="f-btn active" data-filter="all">All</button>
+      <button class="f-btn" data-filter="branding">Branding</button>
+      <button class="f-btn" data-filter="print">Print</button>
+      <button class="f-btn" data-filter="illustration">Illustration</button>
+      <button class="f-btn" data-filter="motion">Motion</button>
+    </div>
+
+    <div class="works-grid" id="works-grid">
+
+      <div class="work-card" data-cat="branding">
+        <div class="wc-bg"></div>
+        <div class="wc-overlay">
+          <span class="wc-cat">Branding</span>
+          <h3 class="wc-title">Flora Collective<br>Identity System</h3>
+          <span class="wc-year">2025</span>
+        </div>
+      </div>
+
+      <div class="work-card" data-cat="print">
+        <div class="wc-bg"></div>
+        <div class="wc-overlay">
+          <span class="wc-cat">Print</span>
+          <h3 class="wc-title">Seasonal Poster<br>Series</h3>
+          <span class="wc-year">2025</span>
+        </div>
+      </div>
+
+      <div class="work-card" data-cat="illustration">
+        <div class="wc-bg"></div>
+        <div class="wc-overlay">
+          <span class="wc-cat">Illustration</span>
+          <h3 class="wc-title">Botanical<br>Line Studies</h3>
+          <span class="wc-year">2024</span>
+        </div>
+      </div>
+
+      <div class="work-card" data-cat="branding">
+        <div class="wc-bg"></div>
+        <div class="wc-overlay">
+          <span class="wc-cat">Branding</span>
+          <h3 class="wc-title">Atelier Brand<br>Identity</h3>
+          <span class="wc-year">2024</span>
+        </div>
+      </div>
+
+      <div class="work-card" data-cat="motion">
+        <div class="wc-bg"></div>
+        <div class="wc-overlay">
+          <span class="wc-cat">Motion</span>
+          <h3 class="wc-title">Social Content<br>Campaign</h3>
+          <span class="wc-year">2025</span>
+        </div>
+      </div>
+
+      <div class="work-card" data-cat="print">
+        <div class="wc-bg"></div>
+        <div class="wc-overlay">
+          <span class="wc-cat">Print &amp; Event</span>
+          <h3 class="wc-title">MC TV Campaign<br>Design</h3>
+          <span class="wc-year">2024</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ CONTACT ══════════════════════════════ -->
+  <footer class="contact-section" id="contact">
+    <div class="ct-left">
+      <span class="ct-pre">Get in touch</span>
+      <div class="ct-heading-row">
+        <h2>Let's<br>talk.</h2>
+        <!-- WhatsApp inline button — sits to the right of the heading -->
+        <a class="wa-contact"
+           href="https://wa.me/32494718997?text=Merhaba%20G%C3%BClpembe!%20Portfolyon%C3%BA%20g%C3%B6rd%C3%BCm%2C%20seninle%20%C3%A7al%C4%B1%C5%9Fmak%20isterim."
+           target="_blank" rel="noopener noreferrer"
+           title="WhatsApp ile mesaj gönder">
+          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bubble body -->
+            <path class="wa-body" fill-rule="evenodd" clip-rule="evenodd"
+              d="M16 2.667C8.636 2.667 2.667 8.636 2.667 16c0 2.328.628 4.512 1.724 6.39L2.667 29.334l7.155-1.692A13.267 13.267 0 0 0 16 29.334c7.364 0 13.333-5.969 13.333-13.333C29.333 8.636 23.364 2.667 16 2.667Z"/>
+            <!-- Phone handset -->
+            <path class="wa-phone" fill-rule="evenodd" clip-rule="evenodd"
+              d="M11.95 9.6c-.32-.72-.656-.735-.96-.748-.249-.011-.533-.011-.817-.011-.284 0-.747.107-1.138.534C8.645 9.8 7.467 10.92 7.467 13.2c0 2.28 1.626 4.48 1.853 4.793.226.312 3.147 5.014 7.734 6.827 3.827 1.507 4.587 1.21 5.414 1.133.826-.077 2.666-1.09 3.04-2.147.373-1.056.373-1.963.262-2.147-.11-.183-.4-.293-.83-.512-.43-.22-2.547-1.258-2.94-1.4-.393-.143-.68-.22-.96.22-.28.44-1.084 1.4-1.328 1.687-.244.286-.488.32-.907.11-.42-.22-1.77-.654-3.372-2.086-1.246-1.113-2.087-2.487-2.33-2.906-.244-.42-.026-.648.183-.857.187-.188.42-.488.63-.733.21-.244.28-.42.42-.698.14-.28.07-.527-.035-.733-.107-.206-.948-2.304-1.337-3.15Z"/>
+          </svg>
+        </a>
+      </div>
+      <a class="ct-email" href="mailto:gulpembecolak@gmail.com">gulpembecolak@gmail.com</a>
+      <span class="ct-phone">+32 494 71 89 97</span>
+    </div>
+    <div class="ct-right">
+      <!-- Small rose mark -->
+      <div class="footer-mark">
+        <svg viewBox="0 0 28 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14,42 C13,36 12,30 13,24 C14,18 14,14 14,10" stroke="#1A1814" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14,10 C10,6 8,2 10,0 C12,-1 14,2 14,6" stroke="#C41E3A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14,10 C18,6 20,2 18,0 C16,-1 14,2 14,6" stroke="#C41E3A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M13,28 C8,25 4,22 5,19 C6,16 10,17 13,20" stroke="#1A1814" stroke-width="2" stroke-linecap="round"/>
+          <path d="M15,22 C20,19 24,18 24,21 C24,24 20,25 15,23" stroke="#1A1814" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="social-row">
+        <a href="https://www.instagram.com" target="_blank">Instagram</a>
+        <a href="https://www.linkedin.com/in/gulpembe-colak" target="_blank">LinkedIn</a>
+        <a href="https://gulpembecolak1.wixsite.com/gulpish" target="_blank">Portfolio</a>
+      </div>
+      <p class="copyright">© 2025 Gülpembe Çolak</p>
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════ SCRIPTS ══════════════════════════════ -->
+  <script>
+    // ── Custom cursor ──
+    const cd = document.getElementById('cd');
+    const cr = document.getElementById('cr');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cd.style.left = mx + 'px';
+      cd.style.top  = my + 'px';
+    });
+
+    // Smooth ring follow
+    function animRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      cr.style.left = rx + 'px';
+      cr.style.top  = ry + 'px';
+      requestAnimationFrame(animRing);
+    }
+    animRing();
+
+    // Hover expand
+    document.querySelectorAll('a, button, #leaf_left, #leaf_right, #bud, .work-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cr.classList.add('big'));
+      el.addEventListener('mouseleave', () => cr.classList.remove('big'));
+    });
+
+    // ── Draw-on animation ──
+    // ── Rose animation: stroke draws → fill floods in → stroke fades ──
+    const roseSeq = [
+      { id: 'leaf_left',  delay: 200,  dur: 2800 },
+      { id: 'leaf_right', delay: 1400, dur: 1800 },
+      { id: 'bud',        delay: 2600, dur: 2200 },
+    ];
+
+    window.addEventListener('load', () => {
+      roseSeq.forEach(({ id, delay, dur }) => {
+        const path = document.getElementById(id);
+        if (!path) return;
+        // Read pre-baked length from SVG attribute, fallback to getTotalLength
+        const len = parseFloat(path.getAttribute('stroke-dasharray'))
+                    || (path.getTotalLength ? path.getTotalLength() : 1200);
+
+        // Initial state: outline ready to draw, fill hidden
+        path.style.transition      = 'none';
+        path.style.fillOpacity     = '0';
+        path.style.strokeOpacity   = '1';
+        path.style.strokeDasharray  = len;
+        path.style.strokeDashoffset = len;
+
+        // Step 1 — stroke draws along the path
+        setTimeout(() => {
+          path.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.4,0,0.2,1)`;
+          path.style.strokeDashoffset = '0';
+        }, delay);
+
+        // Step 2 — fill floods in, stroke fades simultaneously
+        setTimeout(() => {
+          path.style.transition   = 'fill-opacity 0.9s ease, stroke-opacity 0.7s ease 0.25s';
+          path.style.fillOpacity  = '1';
+          path.style.strokeOpacity = '0';
+        }, delay + dur + 60);
+      });
+    });
+
+    // ── Leaf interactions (new path IDs) ──
+    const lGrpL  = document.getElementById('leaf_left');
+    const lGrpR  = document.getElementById('leaf_right');
+    const lblL   = document.getElementById('lbl-left');
+    const lblR   = document.getElementById('lbl-right');
+    const ghostL = document.getElementById('ghost-l');
+    const ghostR = document.getElementById('ghost-r');
+
+    if (lGrpL) {
+      lGrpL.addEventListener('mouseenter', () => { lblL.classList.add('visible'); ghostL.classList.add('visible'); });
+      lGrpL.addEventListener('mouseleave', () => { lblL.classList.remove('visible'); ghostL.classList.remove('visible'); });
+    }
+    if (lGrpR) {
+      lGrpR.addEventListener('mouseenter', () => { lblR.classList.add('visible'); ghostR.classList.add('visible'); });
+      lGrpR.addEventListener('mouseleave', () => { lblR.classList.remove('visible'); ghostR.classList.remove('visible'); });
+    }
+
+    // ── Bud / About panel ──
+    const budGrp    = document.getElementById('bud');
+    const aboutPanel = document.getElementById('about-panel');
+    let budHover = false, panelHover = false;
+
+    function updatePanel() {
+      if (budHover || panelHover) {
+        aboutPanel.classList.add('open');
+      } else {
+        aboutPanel.classList.remove('open');
+      }
+    }
+
+    budGrp.addEventListener('mouseenter', () => { budHover = true; updatePanel(); });
+    budGrp.addEventListener('mouseleave', () => {
+      budHover = false;
+      setTimeout(updatePanel, 120);
+    });
+    aboutPanel.addEventListener('mouseenter', () => { panelHover = true; updatePanel(); });
+    aboutPanel.addEventListener('mouseleave', () => { panelHover = false; updatePanel(); });
+
+    // ── Filter ──
+    document.querySelectorAll('.f-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const filter = this.dataset.filter;
+        document.querySelectorAll('.work-card').forEach(card => {
+          if (filter === 'all' || card.dataset.cat === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // ── Subtle parallax on rose ──
+    const stage = document.getElementById('stage');
+    window.addEventListener('scroll', () => {
+      const sy = window.scrollY;
+      if (sy < window.innerHeight) {
+        stage.style.transform = `translateY(${sy * 0.08}px)`;
+      }
+    }, { passive: true });
+  </script>
+
+
+
+</body>
+</html>
